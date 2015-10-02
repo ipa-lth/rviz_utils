@@ -1,19 +1,50 @@
-#ifndef RVIZ_OVERLAYS_MINIMAL_OVERLAY_H_
-#define RVIZ_OVERLAYS_MINIMAL_OVERLAY_H_
+#ifndef RVIZ_OVERLAYS_PLOTTERS_H_
+#define RVIZ_OVERLAYS_PLOTTERS_H_
 
 #include <QColor>
 #include <QImage>
 #include <QPainter>
 #include <QRectF>
+#include <QTransform>
 
 namespace rviz_overlays {
 namespace plotters {
 
-QRectF margins_removed(const QRectF rect, float margin) {
+inline QRectF margins_removed(const QRectF rect, float margin) {
   return rect.adjusted(margin, margin, -margin, -margin);
 }
 
-void pie(QImage* canvas, QRectF bounding_box, float normalized_value, QColor color) {
+inline void timeseries(QImage* canvas, QRectF bounding_box, const QVector<QPointF>* values, int width, QColor color) {
+  // find min and max
+  QPointF min(values->first().x(), std::numeric_limits<double>::max());
+  QPointF max(values->last().x(), std::numeric_limits<double>::min());
+  for(QVector<QPointF>::const_iterator i = values->constBegin(); i < values->constEnd(); ++i) {
+    if(i->y() < min.y())
+      min.setY(i->y());
+    else if(i->y() > max.y())
+      max.setY(i->y());
+  }
+  QPainter painter(canvas);
+  //painter.setRenderHint(QPainter::Antialiasing, true);
+  QPen pen(color, width, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+  pen.setCosmetic(true); // width not affected by transform
+  painter.setPen(pen);
+  //painter.drawRect(bounding_box);
+
+  // Figure out transform to fit points into box
+  QPointF span = max - min;
+  QTransform T;
+  T.translate(bounding_box.left(), bounding_box.bottom());
+  // Note: flipped y axis
+  T.scale(bounding_box.width() / span.x(), -bounding_box.height() / span.y());
+  T.translate(-min.x(), -min.y());
+  painter.setTransform(T);
+  // Slow operation below!
+  painter.drawPolyline(values->constData(), values->size());
+  painter.end();
+}
+
+inline void pie(QImage* canvas, QRectF bounding_box, float normalized_value, QColor color) {
   const float factor = bounding_box.width();
   const float stroke_width = 0.04 * factor;
   const float value_line_width = 0.08 * factor;
