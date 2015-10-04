@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rviz_overlays)
 
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
   rviz
+  geometry_msgs
+  std_msgs
 )
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)

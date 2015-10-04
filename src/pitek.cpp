@@ -24,6 +24,12 @@ namespace rviz_overlays
     p_state_color_ = new rviz::ColorProperty("Color", QColor(50, 100, 255, 128), "description", p_state_);
     p_state_pie_size_ = new rviz::IntProperty("Pie Size", 100, "description", p_state_);
     p_state_font_size_ = new rviz::IntProperty("Font Size", 48, "description", p_state_);
+    p_state_name_topic_ = new rviz::RosTopicProperty("Name Topic", "",
+      ros::message_traits::datatype<std_msgs::String>(), "description",
+      p_state_, SLOT(pStateNameTopicUpdate()), this);
+    p_state_progress_topic_ = new rviz::RosTopicProperty("Progress Topic", "",
+      ros::message_traits::datatype<std_msgs::Float64>(), "description",
+      p_state_, SLOT(pStateProgressTopicUpdate()), this);
     p_state_font_ = new rviz::StringProperty("Font", "Helvetica", "description", p_state_);
     //Forces
     p_forces_topic_ = new rviz::RosTopicProperty("Topic", "",
@@ -55,6 +61,8 @@ namespace rviz_overlays
     force_z_ = new QVector<QPointF>();
     // Subscribers
     pForcesTopicUpdate();
+    pStateNameTopicUpdate();
+    pStateProgressTopicUpdate();
     onEnable();
   }
 
@@ -81,10 +89,9 @@ namespace rviz_overlays
     int height = overlay_->getTextureHeight();
     int margin = p_margin_->getInt();
     QRectF viewport = plotters::margins_removed(QRectF(0, 0, width, height), margin);
-    
+
     // States
     // TODO get subscriber data
-    float progress = 0.333;
     QString states = "place\npeg in hole\npick";
     // States
     QColor c = p_state_color_->getColor();
@@ -93,7 +100,7 @@ namespace rviz_overlays
     QFont font = QFont(p_state_font_->getString());
     font.setPixelSize(p_state_font_size_->getInt());
     QRectF pie_rect(viewport.topLeft(), QSizeF(s, s));
-    plotters::pie(&img, pie_rect, progress, c);
+    plotters::pie(&img, pie_rect, state_progress_, c);
     QRectF state_text_rect = QRectF(pie_rect.bottomLeft(), pie_rect.size());
     state_text_rect.adjust(0, font.pixelSize() / 4, 0, 0);
     state_text_rect.setBottom(viewport.bottom());
@@ -101,7 +108,7 @@ namespace rviz_overlays
 
     // Forces
     // TODO config
-    int line_width = 3;
+    int line_width = 1;
     // Forces
     c = p_state_color_->getColor();
     // x
@@ -129,15 +136,7 @@ namespace rviz_overlays
     logo_rect.moveBottomRight(viewport.bottomRight());
     painter.drawImage(logo_rect, *logo_);
     painter.end();
-    
-  }
 
-  void Pitek::onEnable() {
-    overlay_->show();
-  }
-
-  void Pitek::onDisable() {
-    overlay_->hide();
   }
 
   void Pitek::pForcesTopicUpdate() {
@@ -170,9 +169,32 @@ namespace rviz_overlays
     QVector<QPointF>::iterator truncate = force->begin();
     while(truncate != force->end() && truncate->x() < earliest)
       truncate = force->erase(truncate);
-    
-    //force->erase(force->begin(), force->begin()+1);
-    //force->erase(force->begin(), force->end());
+  }
+
+  void Pitek::pStateNameTopicUpdate() {
+    // sub_forces_.shutdown();
+    // std::string topic_name = p_forces_topic_->getTopicStd();
+    // ros::NodeHandle n;
+    // sub_forces_ = n.subscribe(topic_name, 1, &Pitek::recordForces, this);
+  }
+
+  void Pitek::pStateProgressTopicUpdate() {
+    sub_state_progress_.shutdown();
+    std::string topic_name = p_state_progress_topic_->getTopicStd();
+    ros::NodeHandle n;
+    sub_state_progress_ = n.subscribe(topic_name, 1, &Pitek::recordStateProgress, this);
+  }
+
+  void Pitek::recordStateProgress(std_msgs::Float64::ConstPtr msg) {
+    state_progress_ = msg->data;
+  }
+
+  void Pitek::onEnable() {
+    overlay_->show();
+  }
+
+  void Pitek::onDisable() {
+    overlay_->hide();
   }
 
 }
