@@ -2,6 +2,10 @@
 #define RVIZ_OVERLAYS_PITEK_H_
 
 #include <QImage>
+#include <QList>
+#include <QPointF>
+#include <QString>
+#include <QVector>
 
 #include <geometry_msgs/Vector3.h>
 #include <ros/ros.h>
@@ -38,6 +42,7 @@ namespace rviz_overlays {
     void recordStateProgress(std_msgs::Float64::ConstPtr msg);
 
     void recordStateName(std_msgs::String::ConstPtr msg);
+    void truncateStateNames(unsigned int length);
 
     // Static Data
     OverlayObject::Ptr overlay_;
@@ -50,7 +55,7 @@ namespace rviz_overlays {
 
     // State Variables
     // Task State
-    QString state_name_;
+    QList<QString> state_names_;
     double state_progress_;
     // Forces
     QVector<QPointF>* force_x_;

@@ -78,6 +78,7 @@ namespace rviz_overlays
                             overlay_->getTextureHeight());
     // Process state
     truncateForces();
+    truncateStateNames(5); // Config?
 
     draw();
   }
@@ -91,8 +92,8 @@ namespace rviz_overlays
     QRectF viewport = plotters::margins_removed(QRectF(0, 0, width, height), margin);
 
     // States
-    // TODO get subscriber data
-    QString states = "place\npeg in hole\npick";
+    // TODO config
+    float fading = 0.6;
     // States
     QColor c = p_state_color_->getColor();
     c.setAlphaF(p_alpha_->getFloat());
@@ -101,10 +102,8 @@ namespace rviz_overlays
     font.setPixelSize(p_state_font_size_->getInt());
     QRectF pie_rect(viewport.topLeft(), QSizeF(s, s));
     plotters::pie(&img, pie_rect, state_progress_, c);
-    QRectF state_text_rect = QRectF(pie_rect.bottomLeft(), pie_rect.size());
-    state_text_rect.adjust(0, font.pixelSize() / 4, 0, 0);
-    state_text_rect.setBottom(viewport.bottom());
-    text::centered(&img, state_text_rect, states, font, c);
+    QPointF state_text_point = pie_rect.bottomLeft() + 1.5 * QPointF(0, font.pixelSize());
+    text::history(&img, state_text_point, state_names_, font, c, fading);
 
     // Forces
     // TODO config
@@ -172,10 +171,10 @@ namespace rviz_overlays
   }
 
   void Pitek::pStateNameTopicUpdate() {
-    // sub_forces_.shutdown();
-    // std::string topic_name = p_forces_topic_->getTopicStd();
-    // ros::NodeHandle n;
-    // sub_forces_ = n.subscribe(topic_name, 1, &Pitek::recordForces, this);
+    sub_state_name_.shutdown();
+    std::string topic_name = p_state_name_topic_->getTopicStd();
+    ros::NodeHandle n;
+    sub_state_name_ = n.subscribe(topic_name, 1, &Pitek::recordStateName, this);
   }
 
   void Pitek::pStateProgressTopicUpdate() {
@@ -183,6 +182,17 @@ namespace rviz_overlays
     std::string topic_name = p_state_progress_topic_->getTopicStd();
     ros::NodeHandle n;
     sub_state_progress_ = n.subscribe(topic_name, 1, &Pitek::recordStateProgress, this);
+  }
+
+  void Pitek::recordStateName(std_msgs::String::ConstPtr msg) {
+    state_names_.append(QString::fromStdString(msg->data));
+  }
+
+  void Pitek::truncateStateNames(unsigned int length) {
+    int truncate = state_names_.length() - length;
+    if(truncate > 0) {
+      state_names_.erase(state_names_.begin(), state_names_.begin() + truncate);
+    }
   }
 
   void Pitek::recordStateProgress(std_msgs::Float64::ConstPtr msg) {
