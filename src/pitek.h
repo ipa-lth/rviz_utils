@@ -77,6 +77,7 @@ namespace rviz_overlays {
     rviz::RosTopicProperty* p_state_progress_topic_;
     rviz::StringProperty* p_state_font_;
     //Forces
+    rviz::BoolProperty* p_forces_antialiasing_;
     rviz::FloatProperty* p_forces_time_;
     rviz::IntProperty* p_forces_w_;
     rviz::IntProperty* p_forces_h_;

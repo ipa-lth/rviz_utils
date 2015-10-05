@@ -32,6 +32,7 @@ namespace rviz_overlays
       p_state_, SLOT(pStateProgressTopicUpdate()), this);
     p_state_font_ = new rviz::StringProperty("Font", "Helvetica", "description", p_state_);
     //Forces
+    p_forces_antialiasing_ = new rviz::BoolProperty("Antialiasing", true, "description", p_forces_);
     p_forces_topic_ = new rviz::RosTopicProperty("Topic", "",
       ros::message_traits::datatype<geometry_msgs::Vector3>(), "description",
       p_forces_, SLOT(pForcesTopicUpdate()), this);
@@ -92,49 +93,55 @@ namespace rviz_overlays
     QRectF viewport = plotters::margins_removed(QRectF(0, 0, width, height), margin);
 
     // States
-    // TODO config
-    float fading = 0.6;
-    // States
-    QColor c = p_state_color_->getColor();
-    c.setAlphaF(p_alpha_->getFloat());
-    int s = p_state_pie_size_->getInt();
-    QFont font = QFont(p_state_font_->getString());
-    font.setPixelSize(p_state_font_size_->getInt());
-    QRectF pie_rect(viewport.topLeft(), QSizeF(s, s));
-    plotters::pie(&img, pie_rect, state_progress_, c);
-    QPointF state_text_point = pie_rect.bottomLeft() + 1.5 * QPointF(0, font.pixelSize());
-    text::history(&img, state_text_point, state_names_, font, c, fading);
+    if(p_state_->getBool()) {
+      // TODO config
+      float fading = 0.6;
+      // States
+      QColor c = p_state_color_->getColor();
+      c.setAlphaF(p_alpha_->getFloat());
+      int s = p_state_pie_size_->getInt();
+      QFont font = QFont(p_state_font_->getString());
+      font.setPixelSize(p_state_font_size_->getInt());
+      QRectF pie_rect(viewport.topLeft(), QSizeF(s, s));
+      plotters::pie(&img, pie_rect, state_progress_, c);
+      QPointF state_text_point = pie_rect.bottomLeft() + 1.5 * QPointF(0, font.pixelSize());
+      text::history(&img, state_text_point, state_names_, font, c, fading);
+    }
 
     // Forces
+    if(p_forces_->getBool()) {
     // TODO config
-    int line_width = 1;
-    // Forces
-    c = p_state_color_->getColor();
-    // x
-    QRectF plot_rect(0, 0, p_forces_w_->getInt(), p_forces_h_->getInt());
-    plot_rect.moveTopRight(viewport.topRight());
-    c.setRgbF(1, 0, 0);
-    c.setAlphaF(p_alpha_->getFloat());
-    plotters::timeseries(&img, plot_rect, force_x_, line_width, c);
-    // y
-    plot_rect.moveTop(plot_rect.top()+plot_rect.height()+p_forces_padding_->getInt());
-    c.setRgbF(0, 1, 0);
-    c.setAlphaF(p_alpha_->getFloat());
-    plotters::timeseries(&img, plot_rect, force_y_, line_width, c);
-    // z
-    plot_rect.moveTop(plot_rect.top()+plot_rect.height()+p_forces_padding_->getInt());
-    c.setRgbF(0, 0, 1);
-    c.setAlphaF(p_alpha_->getFloat());
-    plotters::timeseries(&img, plot_rect, force_z_, line_width, c);
+      int line_width = 1;
+      // Forces
+      QColor c = p_state_color_->getColor();
+      // x
+      QRectF plot_rect(0, 0, p_forces_w_->getInt(), p_forces_h_->getInt());
+      plot_rect.moveTopRight(viewport.topRight());
+      c.setRgbF(1, 0, 0);
+      c.setAlphaF(p_alpha_->getFloat());
+      plotters::timeseries(&img, plot_rect, force_x_, line_width, c, p_forces_antialiasing_->getBool());
+      // y
+      plot_rect.moveTop(plot_rect.top()+plot_rect.height()+p_forces_padding_->getInt());
+      c.setRgbF(0, 1, 0);
+      c.setAlphaF(p_alpha_->getFloat());
+      plotters::timeseries(&img, plot_rect, force_y_, line_width, c, p_forces_antialiasing_->getBool());
+      // z
+      plot_rect.moveTop(plot_rect.top()+plot_rect.height()+p_forces_padding_->getInt());
+      c.setRgbF(0, 0, 1);
+      c.setAlphaF(p_alpha_->getFloat());
+      plotters::timeseries(&img, plot_rect, force_z_, line_width, c, p_forces_antialiasing_->getBool());
+    }
 
     // Logo
-    QPainter painter(&img);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    float sc = p_logo_scale_->getFloat();
-    QRectF logo_rect(0, 0, sc * logo_->width(), sc * logo_->height());
-    logo_rect.moveBottomRight(viewport.bottomRight());
-    painter.drawImage(logo_rect, *logo_);
-    painter.end();
+    if(p_logo_->getBool()) {
+      QPainter painter(&img);
+      painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+      float sc = p_logo_scale_->getFloat();
+      QRectF logo_rect(0, 0, sc * logo_->width(), sc * logo_->height());
+      logo_rect.moveBottomRight(viewport.bottomRight());
+      painter.drawImage(logo_rect, *logo_);
+      painter.end();
+    }
 
   }
 
@@ -210,4 +217,4 @@ namespace rviz_overlays
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( rviz_overlays::Pitek, rviz::Display )
+PLUGINLIB_EXPORT_CLASS(rviz_overlays::Pitek, rviz::Display)

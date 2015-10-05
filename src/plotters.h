@@ -14,7 +14,7 @@ inline QRectF margins_removed(const QRectF rect, float margin) {
   return rect.adjusted(margin, margin, -margin, -margin);
 }
 
-inline void timeseries(QImage* canvas, QRectF bounding_box, const QVector<QPointF>* values, int width, QColor color) {
+inline void timeseries(QImage* canvas, QRectF bounding_box, const QVector<QPointF>* values, int width, QColor color, bool antialiasing) {
   // find min and max
   QPointF min(values->first().x(), std::numeric_limits<double>::max());
   QPointF max(values->last().x(), std::numeric_limits<double>::min());
@@ -25,8 +25,8 @@ inline void timeseries(QImage* canvas, QRectF bounding_box, const QVector<QPoint
       max.setY(i->y());
   }
   QPainter painter(canvas);
-  //painter.setRenderHint(QPainter::Antialiasing, true);
-  QPen pen(color, width, Qt::SolidLine, Qt::FlatCap, Qt::RoundJoin);
+  painter.setRenderHint(QPainter::Antialiasing, antialiasing);
+  QPen pen(color, width, Qt::SolidLine, Qt::FlatCap, Qt::BevelJoin);
   pen.setCosmetic(true); // width not affected by transform
   painter.setPen(pen);
   //painter.drawRect(bounding_box);
