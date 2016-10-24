@@ -11,7 +11,7 @@ def text_publisher():
 	pub=rospy.Publisher('/info',String, queue_size=10)
 	r = rospy.Rate(0.5)
 	while not rospy.is_shutdown():
-		text=['Run','Faster','Even Faster','Stop']
+		text=['Run','Faster','EvenFaster','Stop']
 		i = random.randint(0,3)
 		rospy.loginfo(text[i])
 		pub.publish(text[i])

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- Nodes -->
+	<node name="image_view" pkg="image_view" type="image_view" args="image:=/video"/>
+	<node name="show_video" pkg="publish_media" type="publish_video.py">
+	<param name="vid_path" value="$(find publish_media)/media/video.mpg"/>
+	<param name="bool_loop" value="True"/>
+	</node>
+</launch>
