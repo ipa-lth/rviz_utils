@@ -1,0 +1,39 @@
+<library path="lib/liboverlay_rviz_plugins">
+    <class name="overlay_rviz_plugins/OverlayText"
+                 type="overlay_rviz_plugins::OverlayTextDisplay"
+                 base_class_type="rviz::Display">
+        <description>
+            A Plugin to overlay a text from a topic onto rviz.
+        </description>
+    </class>
+    <class name="overlay_rviz_plugins/Plotter2D"
+                 type="overlay_rviz_plugins::Plotter2DDisplay"
+                 base_class_type="rviz::Display">
+        <description>
+            A Plugin to overlay a 2D plot from a topic onto rviz.
+        </description>
+    </class>
+    <class name="overlay_rviz_plugins/PieChart"
+             type="overlay_rviz_plugins::PieChartDisplay"
+             base_class_type="rviz::Display">
+        <description>
+            A Plugin to overlay a 2D pie chart from a topic onto rviz.
+        </description>
+    </class>
+
+    <class name="overlay_rviz_plugins/OverlayImage"
+             type="overlay_rviz_plugins::OverlayImageDisplay"
+             base_class_type="rviz::Display">
+        <description>
+            A Plugin to overlay a image from a topic onto the rviz view.
+        </description>
+    </class>
+
+    <class name="overlay_rviz_plugins/VideoCapture"
+             type="overlay_rviz_plugins::VideoCaptureDisplay"
+             base_class_type="rviz::Display">
+        <description>
+            A Plugin to record a video from the rviz view.
+        </description>
+    </class>
+</library>
