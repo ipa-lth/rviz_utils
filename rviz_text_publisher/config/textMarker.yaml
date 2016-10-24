@@ -1,0 +1,9 @@
+fade_Rate: 0.05
+frame: "text_frame"
+frame_Position_X: 0
+frame_Position_Y: 0
+frame_Position_Z: 0
+scale_Z: 0.2
+color_Red: 0.0
+color_Green: 1.0
+color_Blue: 0.0
