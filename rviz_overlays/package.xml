@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>rviz_overlays</name>
+  <version>0.0.0</version>
+  <description>The ipa325_rviz_plugins package</description>
+
+  <maintainer email="p.gorczak@gmail.com">Philipp Gorczak</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rviz</build_depend>
+  <run_depend>rviz</run_depend>
+
+<export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+</export>
+</package>
