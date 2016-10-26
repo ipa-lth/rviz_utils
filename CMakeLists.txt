@@ -3,6 +3,8 @@ project(rviz_overlays)
 
 find_package(catkin REQUIRED COMPONENTS
   rviz
+  geometry_msgs
+  std_msgs
 )
 
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
@@ -17,14 +19,17 @@ qt5_wrap_cpp(MOC_FILES
   src/minimal_overlay.h
   src/overlay_utils.h
   src/pie_plot.h
+  src/pitek.h
 )
 
 set(SOURCE_FILES
   src/minimal_overlay.cpp
   src/overlay_utils.cpp
   src/pie_plot.cpp
+  src/pitek.cpp
   ${MOC_FILES}
   src/plotters.h
+  src/text.h
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
