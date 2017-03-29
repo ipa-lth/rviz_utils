@@ -29,6 +29,7 @@ take_image = False
 filename = ""
 cnt = 0
 out = None
+throttle_cnt = 0
 
 def decode_filename(filename):
     global cnt
@@ -72,9 +73,11 @@ def decode_filename(filename):
     return name
 
 def image_callback(msg):
-    global take_image, filename, out
+    global take_image, filename, out, throttle_cnt
     if take_image:
-        rospy.loginfo("Recording")
+        if throttle_cnt%(30*5) == 0:
+            rospy.loginfo("Recording {} sec".format(throttle_cnt/30))
+        throttle_cnt += 1
         try:
             # Convert your ROS Image message to OpenCV2
             cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -85,12 +88,13 @@ def image_callback(msg):
             if out is None:
                 name = decode_filename(filename)
                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                out = cv2.VideoWriter(name, fourcc, 20.0, (640,480))
+                out = cv2.VideoWriter(name, fourcc, 30.0, (msg.width, msg.height))
             out.write(cv2_img)
     else:
         if out is not None:
             out = None
-            rospy.loginfo("Stop Recording")
+            rospy.loginfo("Stop Recording after {} sec".format(throttle_cnt/30.0))
+            throttle_cnt = 0
 
 def empty_srv_cb(req):
     global take_image
@@ -116,7 +120,6 @@ def main():
     rospy.init_node('snapshoter_video')
     # Define your image topic
     image_topic = rospy.get_param("~image_topic", "/usb_cam/image_raw")
-    filename = rospy.get_param("~filename", "/{timestamp/}-video_/{number/}.avi")
     # Set up your subscriber and define its callback
   
     s = rospy.Service('~stop', Empty, empty_srv_cb)
@@ -125,6 +128,7 @@ def main():
   
     rospy.Subscriber(image_topic, Image, image_callback)
     # Spin until ctrl + c
+    rospy.loginfo("Ready to start recording")
     rospy.spin()
 
 if __name__ == '__main__':
