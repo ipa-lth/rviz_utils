@@ -86,14 +86,14 @@ def image_callback(msg):
         else:
             # Save your OpenCV2 image as a avi file
             if out is None:
-                name = decode_filename(filename)
+                filename = decode_filename(filename)
                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-                out = cv2.VideoWriter(name, fourcc, 30.0, (msg.width, msg.height))
+                out = cv2.VideoWriter(filename, fourcc, 30.0, (msg.width, msg.height))
             out.write(cv2_img)
     else:
         if out is not None:
             out = None
-            rospy.loginfo("Stop Recording after {} sec".format(throttle_cnt/30.0))
+            rospy.loginfo("Stop Recording {} after {} sec".format(filename, throttle_cnt/30.0))
             throttle_cnt = 0
 
 def empty_srv_cb(req):
@@ -119,7 +119,7 @@ def main():
     global filename
     rospy.init_node('snapshoter_video')
     # Define your image topic
-    image_topic = rospy.get_param("~image_topic", "/usb_cam/image_raw")
+    image_topic = rospy.get_param("~image", "/image_raw")
     # Set up your subscriber and define its callback
   
     s = rospy.Service('~stop', Empty, empty_srv_cb)
