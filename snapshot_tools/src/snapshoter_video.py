@@ -28,6 +28,7 @@ bridge = CvBridge()
 take_image = False
 filename = ""
 cnt = 0
+out = None
 
 def decode_filename(filename):
     global cnt
@@ -71,25 +72,29 @@ def decode_filename(filename):
     return name
 
 def image_callback(msg):
-    global take_image, filename
+    global take_image, filename, out
     if take_image:
-        rospy.loginfo("Take snapshot")
+        rospy.loginfo("Recording")
         try:
             # Convert your ROS Image message to OpenCV2
             cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError, e:
             print(e)
         else:
-            # Save your OpenCV2 image as a jpeg
-            name = decode_filename(filename)
-            cv2.imwrite(name, cv2_img)
-        finally:
-            take_image = False
+            # Save your OpenCV2 image as a avi file
+            if out is None:
+                name = decode_filename(filename)
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                out = cv2.VideoWriter(name, fourcc, 20.0, (640,480))
+            out.write(cv2_img)
+    else:
+        if out is not None:
+            out = None
+            rospy.loginfo("Stop Recording")
 
 def empty_srv_cb(req):
-    global take_image, filename
-    filename = rospy.get_param("~filename", "/{timestamp/}-image_/{number/}.jpg")
-    take_image = True
+    global take_image
+    take_image = False
     return []
 
 def reset_cb(req):
@@ -99,23 +104,23 @@ def reset_cb(req):
 
 def string_srv_cb(req):
     global take_image, filename
-    if req.str.endswith(('.jpg', '.jpeg')):
+    if req.str.endswith(('.avi')):
         filename = req.str
     else:
-        filename = "{}.jpg".format(req.str)
+        filename = "{}.avi".format(req.str)
     take_image = True
     return []
 
 def main():
     global filename
-    rospy.init_node('snapshoter')
+    rospy.init_node('snapshoter_video')
     # Define your image topic
     image_topic = rospy.get_param("~image_topic", "/usb_cam/image_raw")
-    filename = rospy.get_param("~filename", "/{timestamp/}-image_/{number/}.jpg")
+    filename = rospy.get_param("~filename", "/{timestamp/}-video_/{number/}.avi")
     # Set up your subscriber and define its callback
   
-    s = rospy.Service('~save_default', Empty, empty_srv_cb)
-    s = rospy.Service('~save', String, string_srv_cb)
+    s = rospy.Service('~stop', Empty, empty_srv_cb)
+    s = rospy.Service('~start', String, string_srv_cb)
     s = rospy.Service('~reset_cnt', Empty, reset_cb)
   
     rospy.Subscriber(image_topic, Image, image_callback)
