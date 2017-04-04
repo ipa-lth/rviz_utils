@@ -11,6 +11,7 @@
 import rospy
 import re
 import datetime as dt
+import os
 
 # ROS Image message
 from sensor_msgs.msg import Image
@@ -39,11 +40,10 @@ def decode_filename(filename):
     # TODO: Make this as one regex
 
     # Find timestamp and replace according to formating
-    matchObj = re.search("/{timestamp(.*?)/}" ,name)
-    if matchObj: # found timestamp tag
-        print "1:", matchObj.group()
-        if matchObj.group(1) != "": # found custom formating 
-            print "2:", matchObj.group(1)
+    for matchObj in re.finditer("{timestamp(.*?)}" ,name):
+        #print "1:", matchObj.group()
+        if matchObj.group(1) != "": # found custom formating
+            #print "2:", matchObj.group(1)
             # Replace timestamp according to input parameters
             name = name.replace(matchObj.group(), "{}".format(dt.datetime.now().strftime(matchObj.group(1))))
         else:
@@ -53,11 +53,10 @@ def decode_filename(filename):
                                     dt.datetime.now().strftime(
                                         "%Y-%m-%d_%H:%M:%S")))
 
-    matchObj = re.search("{timestamp(.*?)}" ,name)
-    if matchObj: # found timestamp tag
-        print "1:", matchObj.group()
-        if matchObj.group(1) != "": # found custom formating 
-            print "2:", matchObj.group(1)
+    for matchObj in re.finditer("{timestamp(.*?)}" ,name):
+        #print "1:", matchObj.group()
+        if matchObj.group(1) != "": # found custom formating
+            #print "2:", matchObj.group(1)
             # Replace timestamp according to input parameters
             name = name.replace(matchObj.group(), "{}".format(dt.datetime.now().strftime(matchObj.group(1))))
         else:
@@ -66,9 +65,19 @@ def decode_filename(filename):
                                 "{}".format(
                                     dt.datetime.now().strftime(
                                         "%Y-%m-%d_%H:%M:%S")))
+
+    # Change ~ to user
+    name = os.path.expanduser(name)
+
+    # Check if folder exists, otherwise create it
+    path = os.path.dirname(name)
+    if not os.path.isdir(path):
+        rospy.loginfo("Creating new folder: {}".format(path))
+        os.makedirs(path)
 
     rospy.logdebug("Decode Name: {} -> {}".format(filename, name))
     return name
+
 
 def image_callback(msg):
     global take_image, filename
@@ -113,11 +122,11 @@ def main():
     image_topic = rospy.get_param("~image_topic", "/usb_cam/image_raw")
     filename = rospy.get_param("~filename", "/{timestamp/}-image_/{number/}.jpg")
     # Set up your subscriber and define its callback
-  
+
     s = rospy.Service('~save_default', Empty, empty_srv_cb)
     s = rospy.Service('~save', String, string_srv_cb)
     s = rospy.Service('~reset_cnt', Empty, reset_cb)
-  
+
     rospy.Subscriber(image_topic, Image, image_callback)
     # Spin until ctrl + c
     rospy.spin()

@@ -11,11 +11,14 @@
 import rospy
 import re
 import datetime as dt
+import os
 
 # ROS Image message
 from sensor_msgs.msg import Image
 from std_srvs.srv import Empty
 from snapshot_tools.srv import String
+
+from snapshot_tools.snapshoter import decode_filename
 
 # ROS Image message -> OpenCV2 image converter
 from cv_bridge import CvBridge, CvBridgeError
@@ -30,47 +33,6 @@ filename = ""
 cnt = 0
 out = None
 throttle_cnt = 0
-
-def decode_filename(filename):
-    global cnt
-    # Replace number with cnt
-    name = filename.replace("/{number/}", "{}".format(cnt))
-    name = name.replace("{number}", "{}".format(cnt))
-    cnt += 1
-
-    # TODO: Make this as one regex
-
-    # Find timestamp and replace according to formating
-    matchObj = re.search("/{timestamp(.*?)/}" ,name)
-    if matchObj: # found timestamp tag
-        print "1:", matchObj.group()
-        if matchObj.group(1) != "": # found custom formating 
-            print "2:", matchObj.group(1)
-            # Replace timestamp according to input parameters
-            name = name.replace(matchObj.group(), "{}".format(dt.datetime.now().strftime(matchObj.group(1))))
-        else:
-            # Replace timestamp according to predefined (general) parameters
-            name = name.replace(matchObj.group(),
-                                "{}".format(
-                                    dt.datetime.now().strftime(
-                                        "%Y-%m-%d_%H:%M:%S")))
-
-    matchObj = re.search("{timestamp(.*?)}" ,name)
-    if matchObj: # found timestamp tag
-        print "1:", matchObj.group()
-        if matchObj.group(1) != "": # found custom formating 
-            print "2:", matchObj.group(1)
-            # Replace timestamp according to input parameters
-            name = name.replace(matchObj.group(), "{}".format(dt.datetime.now().strftime(matchObj.group(1))))
-        else:
-            # Replace timestamp according to predefined (general) parameters
-            name = name.replace(matchObj.group(),
-                                "{}".format(
-                                    dt.datetime.now().strftime(
-                                        "%Y-%m-%d_%H:%M:%S")))
-
-    rospy.logdebug("Decode Name: {} -> {}".format(filename, name))
-    return name
 
 def image_callback(msg):
     global take_image, filename, out, throttle_cnt
@@ -121,11 +83,11 @@ def main():
     # Define your image topic
     image_topic = rospy.get_param("~image", "/image_raw")
     # Set up your subscriber and define its callback
-  
+
     s = rospy.Service('~stop', Empty, empty_srv_cb)
     s = rospy.Service('~start', String, string_srv_cb)
     s = rospy.Service('~reset_cnt', Empty, reset_cb)
-  
+
     rospy.Subscriber(image_topic, Image, image_callback)
     # Spin until ctrl + c
     rospy.loginfo("Ready to start recording")
