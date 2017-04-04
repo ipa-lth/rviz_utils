@@ -10,8 +10,8 @@
                 <member id="description">Sends a service to start recording</member>
                 <member id="implementation">
                     <instance type="python">
-                        <member id="module">snapshot_tools.video_service_caller</member>
-                        <member id="class">StartService</member>
+                        <member id="module">snapshot_tools.snapshot_service_caller</member>
+                        <member id="class">StartVideoService</member>
                     </instance>
                 </member>
             </meta>
@@ -19,7 +19,7 @@
                 <type id="service_name" base_type="string_parameter">
                     <data>snapshoter_video/start</data>
                 </type>
-                <type id="video_name" base_type="string_parameter"/>
+                <type id="file_name" base_type="string_parameter"/>
 
                 <type id="on_start" base_type="bool_parameter">
                     <data>True</data>
@@ -39,8 +39,8 @@
                 <member id="description">Sends a service to stop recording</member>
                 <member id="implementation">
                     <instance type="python">
-                        <member id="module">snapshot_tools.video_service_caller</member>
-                        <member id="class">StopService</member>
+                        <member id="module">snapshot_tools.snapshot_service_caller</member>
+                        <member id="class">StopVideoService</member>
                     </instance>
                 </member>
             </meta>
@@ -61,6 +61,34 @@
             </data>
         </type>
 
+        <type id="snapshot_service" base_type="script">
+            <meta>
+                <member id="description">Sends a service to take a image</member>
+                <member id="implementation">
+                    <instance type="python">
+                        <member id="module">snapshot_tools.snapshot_service_caller</member>
+                        <member id="class">TakeSnapShotService</member>
+                    </instance>
+                </member>
+            </meta>
+            <data>
+                <type id="service_name" base_type="string_parameter">
+                    <data>snapshoter/save</data>
+                </type>
+
+                <type id="file_name" base_type="string_parameter"/>
+
+                <type id="on_start" base_type="bool_parameter">
+                    <data>True</data>
+                </type>
+                <type id="wait_for_service" base_type="bool_parameter">
+                    <data>True</data>
+                </type>
+                <type id="namespace" base_type="string_parameter">
+                    <data></data>
+                </type>
+            </data>
+        </type>
     </models>
 
 </pitasc>

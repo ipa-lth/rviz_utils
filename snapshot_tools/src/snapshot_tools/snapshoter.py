@@ -87,17 +87,18 @@ def image_callback(msg):
             # Convert your ROS Image message to OpenCV2
             cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError, e:
-            print(e)
+            rospy.logerror("{}".format(e))
         else:
             # Save your OpenCV2 image as a jpeg
             name = decode_filename(filename)
             cv2.imwrite(name, cv2_img)
+            rospy.loginfo("Saved image: {} ".format(name))
         finally:
             take_image = False
 
 def empty_srv_cb(req):
     global take_image, filename
-    filename = rospy.get_param("~filename", "/{timestamp/}-image_/{number/}.jpg")
+    filename = rospy.get_param("~filename", "~/Pictures/{timestamp/}-image_/{number/}.jpg")
     take_image = True
     return []
 
@@ -119,8 +120,8 @@ def main():
     global filename
     rospy.init_node('snapshoter')
     # Define your image topic
-    image_topic = rospy.get_param("~image_topic", "/usb_cam/image_raw")
-    filename = rospy.get_param("~filename", "/{timestamp/}-image_/{number/}.jpg")
+    image_topic = rospy.get_param("~image", "/usb_cam/image_raw")
+    filename = rospy.get_param("~filename", "~/Pictures/{timestamp/}-image_/{number/}.jpg")
     # Set up your subscriber and define its callback
 
     s = rospy.Service('~save_default', Empty, empty_srv_cb)
@@ -129,6 +130,7 @@ def main():
 
     rospy.Subscriber(image_topic, Image, image_callback)
     # Spin until ctrl + c
+    rospy.loginfo("Ready to take images")
     rospy.spin()
 
 if __name__ == '__main__':
