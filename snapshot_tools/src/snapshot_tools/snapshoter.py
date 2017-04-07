@@ -37,22 +37,7 @@ def decode_filename(filename):
     name = name.replace("{number}", "{}".format(cnt))
     cnt += 1
 
-    # TODO: Make this as one regex
-
     # Find timestamp and replace according to formating
-    for matchObj in re.finditer("{timestamp(.*?)}" ,name):
-        #print "1:", matchObj.group()
-        if matchObj.group(1) != "": # found custom formating
-            #print "2:", matchObj.group(1)
-            # Replace timestamp according to input parameters
-            name = name.replace(matchObj.group(), "{}".format(dt.datetime.now().strftime(matchObj.group(1))))
-        else:
-            # Replace timestamp according to predefined (general) parameters
-            name = name.replace(matchObj.group(),
-                                "{}".format(
-                                    dt.datetime.now().strftime(
-                                        "%Y-%m-%d_%H:%M:%S")))
-
     for matchObj in re.finditer("{timestamp(.*?)}" ,name):
         #print "1:", matchObj.group()
         if matchObj.group(1) != "": # found custom formating
