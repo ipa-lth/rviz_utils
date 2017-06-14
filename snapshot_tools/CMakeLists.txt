@@ -166,6 +166,15 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
+catkin_install_python(PROGRAMS
+                      src/snapshot_tools/snapshot_service_caller.py
+                      src/snapshot_tools/snapshoter.py
+                      src/snapshot_tools/snapshoter_video.py
+                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY models
+  		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
